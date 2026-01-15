@@ -19,11 +19,11 @@ BOLD    = "\033[1m"
 
 # Config
 
-REPO_URL = "https://github.com/XBNMF35XB/SilentMapProject"
-RAW_BASE = "https://raw.githubusercontent.com/XBNMF35XB/SilentMapProject/main"
-REPO_DIR = "SMap"
+REPO_URL = "https://github.com/XBNMF35XB/DarkProbe/"
+RAW_BASE = "https://raw.githubusercontent.com/XBNMF35XB/DarkProbe/main"
+REPO_DIR = "ShadowScan"
 VENV_DIR = "venv"
-OFFICIAL_FILES = ["SMap.py", "ReadMe.md", "Apache Licence", "Support"]
+OFFICIAL_FILES = ["ShadowScan.py", "readme.md", "LICENSE", "support.md"]
 
 # Contact Info
 CONTACT = "contact smapproject41@gmail.com for solving the problem"
@@ -282,7 +282,7 @@ def check_sudo():
     """Check if running with sudo"""
     if os.geteuid() != 0:
         wt(f"{RED}[ERROR] This installer requires sudo privileges{RESET}")
-        wt(f"{RED}Run: sudo python3 SMap_Installer_V3.py{RESET}")
+        wt(f"{RED}Run: sudo python3 CoreSync v3.0.13 BETA{RESET}")
         sys.exit(1)
 
 def install_system_packages(distro_id):
