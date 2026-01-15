@@ -8,7 +8,7 @@ If you need help with ShadowScan, don’t worry — we’re here to assist you.
 **Contact**
 
 Please email us at:
-smapproject41@gmail.com
+darkprobe.help@gmail.com
 
 When contacting us, include:
 Your Operating System
