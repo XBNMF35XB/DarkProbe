@@ -1,56 +1,80 @@
-﻿SilentMap (SMap)
-SilentMap, also known as SMap, is a lightweight Python-based system and network analysis tool.
-When executed, SilentMap collects and displays detailed information about the local system, including:
-Operating System and kernel
-Device type and architecture
-Local IP address
-MAC address
-User and platform details
-Optionally, SilentMap can perform a local network scan to identify other devices connected to the same subnet, providing information such as IP address, MAC address, hostname, vendor (limited database), and a basic OS guess.
-If a detected device is reported as “Linux” without a specific distribution, it is likely a kernel-based or embedded device, such as routers, cameras, smart TVs, IoT devices, or other unknown systems.
-Features
-Local system information detection
-Cross-platform OS detection (Linux, Windows, macOS)
-Optional Silent Mode (reduced speed for stealthier operation)
-ARP-based network scanning (requires Scapy and elevated privileges)
-IP and MAC address analysis utilities
-Simple, single-file design
-Requirements
-Python 3.8 or newer
-Git
-Optional: scapy (required for network scanning)
-Administrator / root privileges for ARP scanning
-To install Scapy: pip install scapy
-Installation
+﻿ShadowScan (SProbe)
+ShadowScan, also known as SProbe, is a lightweight, cross-platform Python-based tool designed for system and network analysis. It helps you gather detailed information about your local system and network environment, ideal for troubleshooting and reconnaissance.
 
-Arch Linux 
-sudo pacman -S git 
-git clone https://github.com/XBNMF35XB/SilentMap.py.git cd SilentMap.py sudo python3 SilentMap.py
+ **Features**
+-Local System Information
+-Displays OS and kernel details
+-Identifies device type and architecture
+-Local IP address and MAC address retrieval
+-User and platform information
+-Network Scanning
+-Identifies other devices on the local network (subnet)
+-Provides IP, MAC, hostname, vendor (via a limited database), and an OS guess
+-Detects kernel-based or embedded systems like routers, cameras, and IoT devices
+-Cross-Platform Support
+-Works on Linux, Windows, and macOS
+-Silent Mode
+-Option for stealthier operation with reduced speed
+-ARP-based Network Scanning
+-Requires elevated privileges (sudo or Administrator)
+-IP/MAC Analysis
+-Performs detailed analysis of IP and MAC addresses
+-Lightweight & Simple
+-Single-file design, easy to use and modify
 
-Debian-based Distributions (Debian, Ubuntu, Kali Linux, Linux Mint) 
-sudo apt update sudo apt install git python3 git clone https://github.com/XBNMF35XB/SilentMap.py.git 
-cd SilentMap.py 
-sudo python3 SilentMap.py
+**Requirements**
+-Python 3.8+
+-Git (for cloning the repository)
+-Optional: Scapy (required for ARP network scanning)
 
+ **Installation**
+ *Arch Linux*
+ sudo pacman -S git
+ git clone https://github.com/XBNMF35XB/ShadowScan.git
+ cd ShadowScan
+ sudo python3 ShadowScan.py
 
-macOS Requires Homebrew. 
-brew install git python 
-git clone https://github.com/XBNMF35XB/SilentMap.py.git 
-cd SilentMap.py python3 SilentMap.py
+ *Debian-based*
+ sudo apt update
+ sudo apt install git python3
+ git clone https://github.com/XBNMF35XB/ShadowScan.git
+ cd ShadowScan
+ sudo python3 ShadowScan.py
 
+  *MacOS*
+Requires Homebrew:
 
-Windows Install Git: https://git-scm.com/download/win 
-Install Python (enable Add Python to PATH): https://www.python.org/downloads/windows/
-Open PowerShell as Administrator and run: 
-git clone https://github.com/XBNMF35XB/SilentMap.py.git
-cd SilentMap.py python SilentMap.py
+ brew install git python
+ git clone https://github.com/XBNMF35XB/ShadowScan.git
+ cd ShadowScan
+ python3 ShadowScan.py
 
+  *Windows*
 
+ Install Git from git-scm.com 
 
-Usage Notes
-Network scanning works best on local networks (e.g. 192.168.x.0/24) Vendor identification is based on a limited OUI database Some features may require elevated privileges Results may vary depending on operating system and network configuration
-Disclaimer
-This tool is provided for educational and informational purposes only. Use SilentMap only on systems and networks you own or have explicit permission to analyze. The author is not responsible for misuse or illegal activities.
-Author
-XBNMF35XB Alias: Nexus
+ Install Python (ensure to check "Add Python to PATH") from python.org
 
+ Then open PowerShell as Administrator:
+
+ git clone https://github.com/XBNMF35XB/ShadowScan.git
+ cd ShadowScan
+ python ShadowScan.py
+
+ Usage
+
+ Once installed, simply run python3 ShadowScan.py (or python ShadowScan.py on Windows).
+
+ Network Scanning works best on local networks (e.g., 192.168.x.0/24).
+ Vendor identification is based on a limited OUI database.
+ Some features, such as ARP scanning, require elevated privileges (sudo or Administrator).
+
+ Disclaimer
+This tool is for educational and informational purposes only.
+ You should only use ShadowScan on systems and networks you own or have explicit permission to analyze.
+
+ The author is not responsible for any misuse or illegal activities. 
+
+ Author
+
+ XBNMF35XB (Alias: Nexus)
