@@ -37,7 +37,7 @@
           Coders can now join with the same requirements as beta testers.
 
           To apply as a Beta Tester or Coder, send an email to:
-          ***smapproject41@gmail.com***
+          ***darkprobe.help@gmail.com***
 
           You will receive a reply within 48 hours.
          
