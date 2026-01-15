@@ -30,14 +30,14 @@ ShadowScan, also known as SProbe, is a lightweight, cross-platform Python-based 
  **Installation**
  *Arch Linux*
  sudo pacman -S git
- git clone https://github.com/XBNMF35XB/ShadowScan.git
+ git clone https://github.com/XBNMF35XB/DarkProbe.git
  cd ShadowScan
  sudo python3 ShadowScan.py
 
  *Debian-based*
  sudo apt update
  sudo apt install git python3
- git clone https://github.com/XBNMF35XB/ShadowScan.git
+ git clone https://github.com/XBNMF35XB/DarkProbe.git
  cd ShadowScan
  sudo python3 ShadowScan.py
 
@@ -45,7 +45,7 @@ ShadowScan, also known as SProbe, is a lightweight, cross-platform Python-based 
 Requires Homebrew:
 
  brew install git python
- git clone https://github.com/XBNMF35XB/ShadowScan.git
+ git clone https://github.com/XBNMF35XB/DarkProbe.git
  cd ShadowScan
  python3 ShadowScan.py
 
@@ -57,7 +57,7 @@ Requires Homebrew:
 
  Then open PowerShell as Administrator:
 
- git clone https://github.com/XBNMF35XB/ShadowScan.git
+ git clone https://github.com/XBNMF35XB/DarkProbe.git
  cd ShadowScan
  python ShadowScan.py
 
