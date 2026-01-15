@@ -11,11 +11,11 @@ import time
 
 # ---------------- CONFIG ---------------- #
 
-REPO_URL = "https://github.com/XBNMF35XB/SilentMapProject"
-RAW_BASE = "https://raw.githubusercontent.com/XBNMF35XB/SilentMapProject/main"
-REPO_DIR = "SMap"
+REPO_URL = "https://github.com/XBNMF35XB/DarkProbe"
+RAW_BASE = "https://raw.githubusercontent.com/XBNMF35XB/DarkProbe/main"
+REPO_DIR = "ShadowScan"
 VENV_DIR = "venv"
-OFFICIAL_FILES = ["SMap.py", "ReadMe.md", "Apache Licence", "Support"]
+OFFICIAL_FILES = ["ShadowScan.py", "readme.md", "LICENSE", "support.md"]
 
 # ---------------- UTILS ---------------- #
 
