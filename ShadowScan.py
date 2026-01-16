@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/home/<user>/venv/bin/python3
 
 
 # --------------- IMPORTS --------------- #
@@ -11,8 +11,26 @@ import random
 import platform
 import subprocess
 import socket
-import psutils
+import psutil
 import pywifi
+import threading
+import readline
+import wifi
+import struct
+import fcntl
+import re
+import json
+import datetime
+import ipaddress
+import urllib.request
+import urllib.error
+import urllib.parse
+import ssl
+import hashlib
+import base64
+import binascii
+import itertools
+import signal
 
 # Optional Scapy for ARP Scan (needs sudo) #
 
@@ -25,6 +43,8 @@ except ImportError:
 # --------------- COLORS --------------- #
 
 ICE     = "\033[97m"
+PINK    = "\033[95m"
+RED     = "\033[38m"
 GREEN   = "\033[92m"
 YELLOW  = "\033[93m"
 BLUE    = "\033[34m"
@@ -36,16 +56,20 @@ BOLD    = "\033[1m"
 
 # --------------- GLOBAL SETTINGS --------------- #
 
-
-SILENT_MODE = False 
+SILENT_MODE = False
+FATAL_ERROR = False
+ERROR = False
+WARNING = False
+ENERGY_SAVER = False
 
 
 # --------------- VISUAL UTILITIES --------------- #
 
-
-def wt(text, d=0.02, color=ICE, bp=False):
-    global SILENT_MODE
-    delay = d if SILENT_MODE else 0.02
+def wt(text, d=0.02, color=BLUE, bp=True):
+    global ENERGY_SAVER, SILENT_MODE
+    # Adjust delay based on SILENT_MODE and ENERGY_SAVER
+    delay = (d * 3 if SILENT_MODE else d) if not ENERGY_SAVER else 2.05
+    
     for c in text:
         sys.stdout.write(color + c + RESET)
         sys.stdout.flush()
@@ -53,6 +77,57 @@ def wt(text, d=0.02, color=ICE, bp=False):
             sys.stdout.write("\a")
         time.sleep(delay)
     print()
+
+def detect_energy_saver():
+    global ENERGY_SAVER
+    try:
+        if platform.system() == "Linux":
+            with open("/sys/class/power_supply/AC/online") as f:
+                status = f.read().strip()
+                ENERGY_SAVER = (status == "0")
+        elif platform.system() == "Windows":
+            import ctypes
+            SYSTEM_POWER_STATUS = ctypes.Structure
+            class SYSTEM_POWER_STATUS(ctypes.Structure):
+                _fields_ = [
+                    ("ACLineStatus", ctypes.c_byte),
+                    ("BatteryFlag", ctypes.c_byte),
+                    ("BatteryLifePercent", ctypes.c_byte),
+                    ("Reserved1", ctypes.c_byte),
+                    ("BatteryLifeTime", ctypes.c_ulong),
+                    ("BatteryFullLifeTime", ctypes.c_ulong),
+                ]
+            status = SYSTEM_POWER_STATUS()
+            ctypes.windll.kernel32.GetSystemPowerStatus(ctypes.byref(status))
+            ENERGY_SAVER = (status.ACLineStatus == 0)
+        else:
+            ENERGY_SAVER = False
+    except Exception:
+        ENERGY_SAVER = False
+
+    # Only print the message if not in SILENT_MODE
+    if ENERGY_SAVER:
+        if platform.system() == "Windows" or platform.system() == "macOS":
+            message = f"{YELLOW}[!] Energy Saver mode detected. Operations will be slower to conserve battery.{RESET}\n"
+            if not SILENT_MODE:
+                print(message)
+            logging.warning(message)  # Log this to file if needed
+
+def fatal_error(text):
+    global FATAL_ERROR
+    FATAL_ERROR = True
+    wt(f"\n{RED}[FATAL ERROR]{RESET} {text}\n", color=RED)
+    logging.error(f"[FATAL ERROR] {text}")  # Log the error to a file
+    sys.exit(1)
+
+def detect_scapy():
+    try:
+        from scapy.all import conf
+        if conf is None:
+            raise ImportError
+    except ImportError:
+        wt("\n[!] Scapy library not found. ARP Scan module will be disabled.\n", color=YELLOW)
+        logging.warning("[!] Scapy library not found. ARP Scan module will be disabled.")
 
 def step_loading(label, size=26, speed=0.02):
     global SILENT_MODE
@@ -62,6 +137,10 @@ def step_loading(label, size=26, speed=0.02):
         filled = "#" * i
         empty = "-" * (size - i)
         pct = int((i / size) * 100)
+
+        # Ensure the progress bar reaches 100% even if there are small rounding errors
+        if i == size:
+            pct = 100
 
         if pct == 100:
             sys.stdout.write(
@@ -78,7 +157,6 @@ def step_loading(label, size=26, speed=0.02):
         time.sleep(speed)
     print()
 
-
 # --------------- INTRO --------------- #
 
 
@@ -87,11 +165,14 @@ def intro():
     time.sleep(0.4)
 
     steps = [
-        "Loading scanners",
-        "Syncing entropy grid",
-        "Initializing device map",
-        "Deploying detection cores",
-        "Activating network engines"
+        "Loading core systems",
+        "Syncing network interfaces",
+        "Initializing hardware scanners",
+        "Deploying software signatures",
+        "Calibrating detection algorithms",
+        "Establishing secure channels",
+        "Activating firewall bypass",
+        "Finalizing system checks",
     ]
 
     for s in steps:
@@ -130,13 +211,37 @@ def detect_linux():
         did = data.get("ID", "").lower()
 
         known = {
-            # Arch
             "arch": "Arch Linux",
             "manjaro": "Manjaro",
             "endeavouros": "EndeavourOS",
             "artix": "Artix Linux",
+            "void": "Void Linux",
+            "gentoo": "Gentoo Linux",
+            "nixos": "NixOS",
+            "slackware": "Slackware Linux",
+            "alpine": "Alpine Linux",
+            "popos": "Pop!_OS",
+            "linuxmint": "Linux Mint",
             "garuda": "Garuda Linux",
-            # Debian / Ubuntu
+            "archbang": "ArchBang",
+            "chakra": "Chakra Linux",
+            "blackarch": "BlackArch",
+            "archlabs": "ArchLabs",
+            "cachyos": "CachyOS",
+            "archmerge": "ArchMerge",
+            "archman": "Archman",
+            "archbuntu": "ArchBuntu",
+            "anarchy": "Anarchy Linux",
+            "finnix": "Finnix",
+            "osmc": "OSMC",
+            "refracta": "Refracta",
+            "arch-dev": "Arch Dev",
+            "arch-gui": "Arch with GUI",
+            "arch-lite": "Arch Lite",
+            "arch-secure": "Arch Secure",
+            "arch-gnome": "Arch GNOME",
+            "arch-kde": "Arch KDE",
+            "arch-xfce": "Arch XFCE",
             "debian": "Debian",
             "ubuntu": "Ubuntu",
             "linuxmint": "Linux Mint",
@@ -146,26 +251,193 @@ def detect_linux():
             "elementary": "elementary OS",
             "zorin": "Zorin OS",
             "mx": "MX Linux",
-            # Red Hat
+            "siduction": "Siduction",
+            "antiX": "antiX",
+            "deepin": "Deepin",
+            "bunsenlabs": "BunsenLabs Linux",
+            "peppermint": "Peppermint OS",
+            "ubuntu-mate": "Ubuntu MATE",
+            "ubuntu-budgie": "Ubuntu Budgie",
+            "ubuntu-studio": "Ubuntu Studio",
+            "lubuntu": "Lubuntu",
+            "xubuntu": "Xubuntu",
+            "ubuntu-server": "Ubuntu Server",
+            "ubuntu-core": "Ubuntu Core",
+            "ubuntu-touch": "Ubuntu Touch",
+            "solus": "Solus",
+            "q4os": "Q4OS",
+            "devuan": "Devuan",
+            "pureos": "PureOS",
+            "bunsenlabs": "BunsenLabs",
+            "backbox": "BackBox",
+            "bodhi": "Bodhi Linux",
+            "crunchbangplusplus": "CrunchBang++",
+            "guix": "Guix System",
+            "kubuntu": "Kubuntu",
+            "lubuntu": "Lubuntu",
+            "xubuntu": "Xubuntu",
+            "peppermint": "Peppermint",
             "fedora": "Fedora",
             "rhel": "Red Hat Enterprise Linux",
             "centos": "CentOS",
             "rocky": "Rocky Linux",
             "almalinux": "AlmaLinux",
-            # SUSE
+            "scientific": "Scientific Linux",
+            "clearos": "ClearOS",
+            "oracle-linux": "Oracle Linux",
+            "zoran": "Zoran",
+            "redhat": "Red Hat",
             "opensuse": "openSUSE",
             "sles": "SUSE Linux Enterprise",
-            # Alpine / lightweight
+            "sle": "SUSE Linux Enterprise Desktop",
+            "opensuse-tumbleweed": "openSUSE Tumbleweed",
+            "opensuse-leap": "openSUSE Leap",
+            "suse": "SUSE Linux",
             "alpine": "Alpine Linux",
             "void": "Void Linux",
             "gentoo": "Gentoo",
             "nixos": "NixOS",
             "slackware": "Slackware",
-            # Embedded / special
+            "crux": "CRUX",
+            "salix": "Salix OS",
+            "artix": "Artix Linux",
+            "devuan": "Devuan",
+            "manjaro-architect": "Manjaro Architect",
+            "tinycore": "Tiny Core Linux",
+            "puppy": "Puppy Linux",
+            "slimjet": "SlimJet",
+            "knoppix": "Knoppix",
+            "kanotix": "Kanotix",
+            "antix": "antiX",
+            "sabayon": "Sabayon Linux",
+            "parrotsec": "Parrot Security",
+            "crunchbangplusplus": "CrunchBang++",
+            "bedrock": "Bedrock Linux",
+            "raspios": "Raspberry Pi OS",
             "raspbian": "Raspberry Pi OS",
             "postmarketos": "postmarketOS",
             "steam": "SteamOS",
-            "clear-linux-os": "Clear Linux"
+            "clear-linux-os": "Clear Linux",
+            "dietpi": "DietPi",
+            "openwrt": "OpenWrt",
+            "opnsense": "OPNsense",
+            "tailos": "Tails",
+            "alpine-pine": "Alpine Pine",
+            "volumio": "Volumio",
+            "coreos": "CoreOS",
+            "openhabian": "openHABian",
+            "funtoo": "Funtoo",
+            "android-x86": "Android-x86",
+            "webos": "webOS",
+            "linux4one": "Linux4One",
+            "plasma-mobile": "Plasma Mobile",
+            "retroarch": "RetroArch",
+            "batocera": "Batocera",
+            "recalbox": "RecalBox",
+            "lakka": "Lakka",
+            "retropie": "RetroPie",
+            "arcadeos": "ArcadeOS",
+            "gamingonlinux": "Gaming on Linux",
+            "xbox-live": "Xbox Live",
+            "steamdeck": "Steam Deck",
+            "playonlinux": "PlayOnLinux",
+            "penguinplay": "Penguin Play",
+            "ubuntu-gamepack": "Ubuntu GamePack",
+            "gamestar": "GameStar OS",
+            "nitrux-gaming": "Nitrux Gaming",
+            "pop-os-gaming": "Pop!_OS Gaming",
+            "steamOS": "SteamOS",
+            "gamebuntu": "GameBuntu",
+            "gameros": "GamerOS",
+            "lax": "LaxOS",
+            "linux-gaming": "Linux Gaming",
+            "gamescope": "Gamescope",
+            "galliumos": "GalliumOS",
+            "void-gaming": "Void Gaming",
+            "whonix": "Whonix",
+            "tails": "Tails",
+            "pureos": "PureOS",
+            "alpine": "Alpine Linux",
+            "ubuntu-secure": "Ubuntu Secure",
+            "linux-secure": "Linux Secure",
+            "secureos": "SecureOS",
+            "subgraph": "Subgraph OS",
+            "debian-hardening": "Debian Hardening",
+            "debian-secure": "Debian Secure",
+            "qubes": "Qubes OS",
+            "tails": "Tails",
+            "parrotsec": "Parrot Security OS",
+            "ionside": "IonSide",
+            "rhel": "Red Hat Enterprise Linux",
+            "fedora": "Fedora",
+            "ubuntu-dev": "Ubuntu Dev",
+            "arch-dev": "Arch Dev",
+            "gentoo-dev": "Gentoo Dev",
+            "debian-dev": "Debian Dev",
+            "clear-linux-dev": "Clear Linux Dev",
+            "turingos": "TuringOS",
+            "nixos-dev": "NixOS Dev",
+            "solus-dev": "Solus Dev",
+            "vscodeos": "VSCodeOS",
+            "devuan": "Devuan",
+            "codeos": "CodeOS",
+            "ubuntu-builder": "Ubuntu Builder",
+            "arch": "Arch Linux",
+            "gentoo": "Gentoo",
+            "debian": "Debian",
+            "ubuntu": "Ubuntu",
+            "centos": "CentOS",
+            "slackware": "Slackware",
+            "ubuntu-mini": "Ubuntu Mini",
+            "tinycore": "Tiny Core Linux",
+            "puppy": "Puppy Linux",
+            "lubuntu": "Lubuntu",
+            "ubuntu-lite": "Ubuntu Lite",
+            "mx-lite": "MX Lite",
+            "linux-lite": "Linux Lite",
+            "antix": "antiX",
+            "salix": "Salix OS",
+            "lfs": "Linux From Scratch",
+            "slimjet": "SlimJet",
+            "knoppix": "Knoppix",
+            "bodhi": "Bodhi Linux",
+            "crux": "CRUX",
+            "slimlinux": "SlimLinux",
+            "lightos": "LightOS",
+            "featherlinux": "Feather Linux",
+            "sliTaz": "SliTaz",
+            "daphile": "Daphile",
+            "antiX": "antiX",
+            "debian-gui": "Debian with GUI",
+            "ubuntu-gui": "Ubuntu with GUI",
+            "mint": "Linux Mint",
+            "fedora-workstation": "Fedora Workstation",
+            "pop-os": "Pop!_OS",
+            "kali-linux": "Kali Linux",
+            "zorin-os": "Zorin OS",
+            "deepin": "Deepin",
+            "linuxmint-cinnamon": "Linux Mint Cinnamon",
+            "ubuntu-xfce": "Ubuntu XFCE",
+            "redhat": "Red Hat",
+            "manjaro-xfce": "Manjaro XFCE",
+            "solus-gnome": "Solus GNOME",
+            "pop-gnome": "Pop!_OS GNOME",
+            "elementary-gnome": "elementary OS GNOME",
+            "fedora-gnome": "Fedora GNOME",
+            "debian-gnome": "Debian GNOME",
+            "ubuntu-mate": "Ubuntu MATE",
+            "ubuntu-budgie": "Ubuntu Budgie",
+            "kubuntu": "Kubuntu",
+            "lubuntu": "Lubuntu",
+            "xubuntu": "Xubuntu",
+            "centos-stream": "CentOS Stream",
+            "rocky-linux": "Rocky Linux",
+            "almalinux": "AlmaLinux",
+            "opensuse-leap": "openSUSE Leap",
+            "opensuse-tumbleweed": "openSUSE Tumbleweed",
+            "manjaro": "Manjaro",
+            "endeavouros": "EndeavourOS",
+            "manjaro-gnome": "Manjaro GNOME"
         }
 
         if did in known:
@@ -207,6 +479,23 @@ def get_mac_address():
     except Exception:
         return "Unknown"
 
+def get_processor_info():
+    try:
+        return platform.processor() or "Unknown"
+    except Exception:
+        return "Unknown"
+    known = {
+        "x86_64": "64-bit x86",
+        "i386": "32-bit x86",
+        "armv7l": "ARMv7",
+        "aarch64": "ARM64",
+        "ppc64le": "PowerPC 64-bit Little Endian",
+        "s390x": "IBM Z 64-bit",
+    }
+    p = platform.machine().lower()
+    return known.get(p, p.capitalize())
+
+
 def build_details(osname):
     return {
         "OS": osname,
@@ -217,6 +506,8 @@ def build_details(osname):
         "Device Type": detect_device_type(),
         "Local IP": get_local_ip(),
         "MAC Address": get_mac_address(),
+        "Version": platform.version(),
+        "Processor": platform.processor() or "Unknown",
     }
 
 def reveal(osname, details):
@@ -268,6 +559,28 @@ def arp_scan(subnet="192.168.1.0/24", retries=3, timeout=2):
             "3C:52:82": "Intel",
             "FC:FB:FB": "Apple",
             "B8:27:EB": "Raspberry Pi",
+            "00:14:22": "Dell",
+            "00:1B:63": "Apple",
+            "00:0C:29": "VMware",
+            "00:50:56": "VMware",
+            "00:15:5D": "Microsoft",
+            "00:1E:C2": "Hewlett-Packard",
+            "00:25:90": "Samsung",
+            "00:0F:FE": "Sony",
+            "00:16:3E": "XenSource",
+            "00:18:8B": "Huawei",
+            "00:1D:D8": "Lenovo",
+            "00:1F:3C": "Asus",
+            "00:21:6A": "TP-Link",
+            "00:22:43": "Netgear",
+            "00:24:E8": "LG Electronics",
+            "00:26:5E": "ZTE",
+            "00:30:48": "Motorola",
+            "00:50:DA": "Nokia",
+            "00:60:2F": "Xiaomi",
+            "00:80:48": "Panasonic",
+            "00:90:4C": "HTC",
+            "00:90:4C": "HTC"
         }
         vendor = vendors.get(oui, "Unknown")
 
@@ -508,6 +821,27 @@ def mac_info(mac):
         "3C:52:82": "Intel",
         "FC:FB:FB": "Apple",
         "B8:27:EB": "Raspberry Pi",
+        "00:14:22": "Dell",
+        "00:1B:63": "Apple",
+        "00:0C:29": "VMware",
+        "00:50:56": "VMware",
+        "00:15:5D": "Microsoft",
+        "00:1E:C2": "Hewlett-Packard",
+        "00:25:90": "Samsung",
+        "00:0F:FE": "Sony",
+        "00:16:3E": "XenSource",
+        "00:18:8B": "Huawei",
+        "00:1D:D8": "Lenovo",
+        "00:1F:3C": "Asus",
+        "00:21:6A": "TP-Link",
+        "00:22:43": "Netgear",
+        "00:24:E8": "LG Electronics",
+        "00:26:5E": "ZTE",
+        "00:30:48": "Motorola",
+        "00:50:DA": "Nokia",
+        "00:60:2F": "Xiaomi",
+        "00:80:48": "Panasonic",
+        "00:90:4C": "HTC",
     }
 
     print("Vendor:", vendors.get(oui, "Unknown Vendor"))
@@ -558,7 +892,30 @@ def main():
 
     ip_mac_info_module()
     wt("\nShutting down...", color=BLUE)
+    time.sleep(1.5)
 
 if __name__ == "__main__":
     random.seed(int(time.time()))
     main()
+
+# --------------- END OF FILE --------------- #
+#
+# 
+# DarkProbe ShadowScan Module - 2026 © Nexus
+# https://www.github.com/XBNMF35XB/DarkProbe/
+# Licensed under the GNU GENERAL PUBLIC LICENSE License
+# For support, visit: https://www.github.com/XBNMF35XB/DarkProbe/support.md
+# Version 8.4.2
+# NO AI USED IN THE CREATION OF THIS FILE
+# ALL CODE WRITTEN BY NEXUS
+# For more updates about DarkProbe, visit the official repository.
+# All the code is written in Python3
+# When downloading. use the installer to set up DarkProbe properly.
+# DarkProbe is a powerful OSINT and Reconnaissance Framework.
+# DarkProbe is intended for operational purposes only.
+# Misuse of DarkProbe is not the responsibility of the author.
+# Use DarkProbe with your own networks and systems only.
+# Nexus - Out.
+#
+#
+# ------------------------------------------- #
